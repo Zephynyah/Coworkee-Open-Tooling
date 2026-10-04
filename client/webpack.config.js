@@ -23,7 +23,7 @@ module.exports = async function (env, argv) {
       filename: '[name].js',
       publicPath: ''
     },
-    // Treat Ext as an external global from the statically loaded ext-all.js
+    // Treat Ext as an external global from the statically loaded ext-modern-all.js
     externals: {
       Ext: 'Ext'
     },
@@ -36,20 +36,31 @@ module.exports = async function (env, argv) {
       ]
     },
     plugins: [
-      // 1. Copy the pre-built Ext JS static files to output
+      // 1. Copy the pre-built Modern Ext JS static files to output
       new CopyWebpackPlugin({
         patterns: [
           {
-            from: path.resolve(__dirname, 'client/ext/build/ext-all.js'),
-            to: 'ext/ext-all.js'
+            from: path.resolve(__dirname, 'ext/build/ext-modern-all.js'),
+            to: 'ext/ext-modern-all.js'
           },
           {
-            from: path.resolve(__dirname, 'client/ext/build/modern/theme-triton/resources'),
+            from: path.resolve(__dirname, 'ext/build/modern/theme-material/resources'),
             to: 'ext/resources'
           },
           {
-            from: path.resolve(__dirname, 'client/ext/build/modern/theme-triton/theme-triton.js'),
-            to: 'ext/theme-triton.js'
+            from: path.resolve(__dirname, 'ext/build/modern/theme-material/theme-material.js'),
+            to: 'ext/theme-material.js'
+          },
+          // Copy application source files so dynamic profile resolution works
+          {
+            from: path.resolve(__dirname, 'app'),
+            to: 'app'
+          },
+          // Copy optional UX packages if available in your ext build
+          {
+            from: path.resolve(__dirname, 'ext/build/packages/ux/modern'),
+            to: 'ext/ux',
+            noErrorOnMissing: true
           }
         ]
       }),

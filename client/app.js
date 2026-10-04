@@ -3,6 +3,18 @@
  * needed for your application, but these edits will have to be merged by
  * Sencha Cmd when upgrading.
  */
+
+// 1. Disable Sencha Cmd's dynamic HTTP loader
+Ext.Loader.setConfig({
+    enabled: false,
+    paths: {
+        'App': 'app'
+    }
+});
+
+ // 2. Import your Application class so Webpack bundles it
+import './app/Application';
+
 Ext.application({
     name: 'App',
 
