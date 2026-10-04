@@ -5,4 +5,5 @@
 /server/*.db
 /server/node_modules
 /client/packages/local/ext-google
+/from-working-app/
 *.log

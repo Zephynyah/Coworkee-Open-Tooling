@@ -5,8 +5,10 @@
   "description": "Coworkee Demo Application",
   "scripts": {
     "clean": "rimraf build dist",
+    "theme": "node build-theme.js",
+    "prestart": "npm run theme",
     "start": "webpack-dev-server --mode development",
-    "build": "npm run clean && webpack --mode production"
+    "build": "npm run clean && npm run theme && webpack --mode production"
   },
   "dependencies": {
     "escape-string-regexp": "^1.0.5",
@@ -21,6 +23,7 @@
     "html-webpack-plugin": "^3.2.0",
     "portfinder": "^1.0.18",
     "rimraf": "^3.0.2",
+    "sass": "^1.105.1",
     "webpack": "^4.46.0",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.3"

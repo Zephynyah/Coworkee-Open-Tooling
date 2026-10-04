@@ -1,0 +1,535 @@
+// =============================================================================
+// Ext JS theme compatibility shims
+// =============================================================================
+//
+// The application's SASS (app/**/*.scss and the `coworkee` theme package under
+// packages/local/coworkee/sass) is written against the Ext JS modern theme
+// toolchain: it calls Ext's own Sass mixins (button-ui, panel-ui, ellipsis, ...)
+// and functions (dynamic(), get-resource-path(), brightness()).
+//
+// Those live in @sencha/ext-theme-material's `theme/src` + `theme/var` trees,
+// distributed only through npm.sencha.com and requiring a Sencha account. This
+// project builds against the pre-compiled `ext/build` output instead, so the
+// theme *source* is unavailable and those calls would not compile.
+//
+// This file provides the missing surface so the existing, unmodified SASS can be
+// compiled with plain dart-sass. It is a best-effort approximation, NOT a
+// replacement for a real theme build -- see the fidelity note at the bottom.
+//
+// Load order (see build-theme.js):
+//   _shims -> coworkee sass/etc/all -> coworkee sass/var/all
+//           -> coworkee sass/src/** -> app/**
+//
+// -----------------------------------------------------------------------------
+// 1. Theme variables the application SASS references but does not define.
+//
+//    Declared !default so sass/var/all.scss can override them, and declared
+//    *before* it because var/all.scss dereferences some of them at parse time
+//    (e.g. $panel-header-background-color: $panel-body-background-color).
+// -----------------------------------------------------------------------------
+
+$panel-body-background-color: #fff !default;
+$panel-body-color: #333 !default;
+$listitem-background-color: #f5f5f5 !default;
+$field-vertical-spacing: 10px !default;
+$field-vertical-spacing-big: 13px !default;
+$font-icon-font-family: 'Font Awesome 6 Free' !default;
+$gridcolumn-sort-icon-font-size: 12px !default;
+$fa-var-angle-up: '\f077' !default;
+$fa-var-angle-down: '\f078' !default;
+$fa-var-times: '\f00d' !default;
+
+// -----------------------------------------------------------------------------
+// 2. Functions
+// -----------------------------------------------------------------------------
+
+// Ext's dynamic() emits a CSS `dynamic()` call so a value can be swapped from
+// the JS side. Without the theme compiler there is no runtime mechanism behind
+// it, so the value is emitted statically.
+@function dynamic($value) {
+    @return $value;
+}
+
+// Resolves against the application static resources, which webpack copies to
+// dist/resources (see webpack.config.js). Callers wrap the result in url(), e.g.
+//   background-image: url(get-resource-path('images/loading.png'));
+// so this must return a bare path, not a url() expression.
+@function get-resource-path($path) {
+    @return "resources/#{$path}";
+}
+
+// Perceived brightness (0-100). Used by the theme package's contrasted().
+@function brightness($color) {
+    $sum: 0;
+
+    @each $channel in red($color), green($color), blue($color) {
+        $sum: $sum + $channel;
+    }
+
+    @return $sum / 3;
+}
+
+// 'phone' -> '-phone'
+@function ui-suffix($ui) {
+    @return -#{$ui};
+}
+
+// -----------------------------------------------------------------------------
+// 3. Property pass-throughs
+//
+//    In the Ext theme these exist as mixins mainly to emit vendor prefixes for
+//    older engines. Every browser the Modern toolkit targets handles the plain
+//    unprefixed property, so they map straight through.
+// -----------------------------------------------------------------------------
+
+@mixin _decl($property, $value) {
+    @if $value != null {
+        #{$property}: $value;
+    }
+}
+
+@mixin border-radius($radius: 6px, $pseudo: null, $top-left: null, $top-right: null, $bottom-right: null, $bottom-left: null) {
+    @if $top-left != null or $top-right != null or $bottom-right != null or $bottom-left != null {
+        border-radius: $top-left $top-right $bottom-right $bottom-left;
+    } @else {
+        border-radius: $radius;
+    }
+}
+
+@mixin background-size($size...) {
+    background-size: $size;
+}
+
+@mixin rotate($angle) {
+    transform: rotate($angle);
+}
+
+@mixin transform-origin($origin...) {
+    transform-origin: $origin;
+}
+
+@mixin opacity($value) {
+    opacity: $value;
+}
+
+@mixin transition-property($properties...) {
+    transition-property: $properties;
+}
+
+@mixin transition-duration($durations...) {
+    transition-duration: $durations;
+}
+
+@mixin ellipsis() {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@mixin keyframes($name) {
+    @keyframes #{$name} {
+        @content;
+    }
+}
+
+@mixin animation($args...) {
+    animation: $args;
+}
+// Defaults come from the $default-* variables the theme package declares in
+// packages/local/coworkee/sass/var/all.scss.
+@mixin single-box-shadow(
+    $hoff: $default-box-shadow-h-offset,
+    $voff: $default-box-shadow-v-offset,
+    $blur: $default-box-shadow-blur,
+    $spread: $default-box-shadow-spread,
+    $color: $default-box-shadow-color
+) {
+    box-shadow: $hoff $voff $blur $spread $color;
+}
+
+@mixin single-text-shadow(
+    $hoff: 0,
+    $voff: $default-text-shadow-v-offset,
+    $blur: $default-text-shadow-blur,
+    $color: $default-text-shadow-color
+) {
+    text-shadow: $hoff $voff $blur $color;
+}
+
+// Ext's two-arc loading spinner. Reproduces the markup contract
+// (.x-loading-spinner / -outer / -inner) that Ext.LoadMask renders.
+@mixin st-loading-spinner($size: 26px, $color: #555, $border-width: 4px, $duration: 2s) {
+    .x-loading-spinner {
+        margin: 0 auto;
+        position: relative;
+        height: $size;
+        width: $size;
+
+        .x-loading-spinner-outer {
+            animation: st-spin $duration linear infinite;
+            border: $border-width solid $color;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            box-sizing: border-box;
+            height: $size;
+            width: $size;
+        }
+
+        .x-loading-spinner-inner {
+            animation: st-spin ($duration / 2) linear infinite;
+            border: $border-width solid $color;
+            border-bottom-color: transparent;
+            border-left-color: transparent;
+            border-radius: 50%;
+            box-sizing: border-box;
+            height: $size;
+            left: 0;
+            position: absolute;
+            top: 0;
+            width: $size;
+        }
+    }
+
+    @keyframes st-spin {
+        100% { transform: rotate(360deg); }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// 4. Widget visual themes ("ui")
+//
+//    The selector shape mirrors what the stock Material theme emits, e.g.
+//      .x-button-action{color:...}
+//      .x-button-action .x-inner-el{background-color:...}
+//      .x-button-action.x-hovered .x-inner-el{...}
+// -----------------------------------------------------------------------------
+
+@mixin button-ui(
+    $ui,
+    $background-color: null, $hovered-background-color: null, $pressed-background-color: null,
+    $color: null, $hovered-color: null, $pressed-color: null,
+    $border-color: null, $hovered-border-color: null, $pressed-border-color: null,
+    $border-style: null, $border-width: null, $border-radius: null,
+    $font-size: null, $font-size-big: null, $font-weight: null,
+    $line-height: null, $line-height-big: null,
+    $padding: null, $padding-big: null,
+    $icon-size: null, $icon-size-big: null,
+    $icon-font-size: null, $icon-font-size-big: null,
+    $icon-horizontal-spacing: null, $icon-horizontal-spacing-big: null,
+    $icon-only-padding: null, $icon-only-padding-big: null
+) {
+    .x-button-#{$ui} {
+        @include _decl(color, $color);
+        @include _decl(font-size, $font-size);
+        @include _decl(font-weight, $font-weight);
+        @include _decl(line-height, $line-height);
+
+        .x-inner-el {
+            @include _decl(background-color, $background-color);
+            @include _decl(border-color, $border-color);
+            @include _decl(border-style, $border-style);
+            @include _decl(border-width, $border-width);
+            @include _decl(border-radius, $border-radius);
+            @include _decl(padding, $padding);
+        }
+
+        .x-icon-el {
+            @include _decl(color, $color);
+            @include _decl(font-size, $icon-font-size);
+            @include _decl(width, $icon-size);
+            @include _decl(height, $icon-size);
+            @include _decl(margin, if($icon-horizontal-spacing == null,
+                null, 0 $icon-horizontal-spacing 0 0));
+        }
+
+        .x-arrow-el {
+            @include _decl(color, $color);
+        }
+
+        &.x-hovered {
+            @include _decl(color, $hovered-color);
+
+            .x-inner-el {
+                @include _decl(background-color, $hovered-background-color);
+                @include _decl(border-color, $hovered-border-color);
+            }
+        }
+
+        &.x-pressed,
+        &.x-pressing {
+            @include _decl(color, $pressed-color);
+
+            .x-inner-el {
+                @include _decl(background-color, $pressed-background-color);
+                @include _decl(border-color, $pressed-border-color);
+            }
+        }
+
+        &.x-big {
+            @include _decl(font-size, $font-size-big);
+            @include _decl(line-height, $line-height-big);
+
+            .x-inner-el {
+                @include _decl(padding, $padding-big);
+            }
+
+            .x-icon-el {
+                @include _decl(font-size, $icon-font-size-big);
+                @include _decl(width, $icon-size-big);
+                @include _decl(height, $icon-size-big);
+                @include _decl(margin, if($icon-horizontal-spacing-big == null,
+                    null, 0 $icon-horizontal-spacing-big 0 0));
+            }
+        }
+
+        &.x-icon-only {
+            .x-inner-el {
+                @include _decl(padding, $icon-only-padding);
+            }
+
+            &.x-big .x-inner-el {
+                @include _decl(padding, $icon-only-padding-big);
+            }
+        }
+    }
+}
+
+@mixin panel-ui(
+    $ui,
+    $background-color: null, $border-color: null, $border-style: null, $border-width: null,
+    $body-background-color: null, $body-color: null, $body-padding: null,
+    $body-border-color: null, $body-border-style: null, $body-border-width: null,
+    $header-background-color: null, $header-color: null, $header-border-width: null,
+    $header-font-size: null, $header-font-size-big: null,
+    $header-line-height: null, $header-line-height-big: null,
+    $header-icon-size: null, $header-icon-size-big: null,
+    $header-icon-font-size: null, $header-icon-font-size-big: null,
+    $header-title-padding: null, $header-title-padding-big: null,
+    $anchor-margin: null, $anchor-height: null, $anchor-width: null
+) {
+    .x-panel-#{$ui} {
+        @include _decl(background-color, $background-color);
+        @include _decl(border-color, $border-color);
+        @include _decl(border-style, $border-style);
+        @include _decl(border-width, $border-width);
+
+        .x-body-el {
+            @include _decl(background-color, $body-background-color);
+            @include _decl(color, $body-color);
+            @include _decl(padding, $body-padding);
+            @include _decl(border-color, $body-border-color);
+            @include _decl(border-style, $body-border-style);
+            @include _decl(border-width, $body-border-width);
+        }
+
+        .x-panel-header {
+            @include _decl(background-color, $header-background-color);
+            @include _decl(color, $header-color);
+            @include _decl(border-width, $header-border-width);
+            @include _decl(font-size, $header-font-size);
+            @include _decl(line-height, $header-line-height);
+
+            .x-paneltitle {
+                @include _decl(padding, $header-title-padding);
+
+                .x-icon-el {
+                    @include _decl(font-size, $header-icon-font-size);
+                    @include _decl(width, $header-icon-size);
+                    @include _decl(height, $header-icon-size);
+                }
+            }
+        }
+
+        .x-anchor-el {
+            @include _decl(margin, $anchor-margin);
+            @include _decl(height, $anchor-height);
+            @include _decl(width, $anchor-width);
+        }
+
+        &.x-big {
+            .x-panel-header {
+                @include _decl(font-size, $header-font-size-big);
+                @include _decl(line-height, $header-line-height-big);
+
+                .x-paneltitle {
+                    @include _decl(padding, $header-title-padding-big);
+
+                    .x-icon-el {
+                        @include _decl(font-size, $header-icon-font-size-big);
+                        @include _decl(width, $header-icon-size-big);
+                        @include _decl(height, $header-icon-size-big);
+                    }
+                }
+            }
+        }
+    }
+}
+
+@mixin dataview-ui(
+    $ui,
+    $background-color: null,
+    $item-color: null, $item-hovered-color: null, $item-selected-color: null, $item-pressed-color: null,
+    $item-background-color: null, $item-alt-background-color: null,
+    $item-hovered-background-color: null, $item-selected-background-color: null,
+    $item-pressed-background-color: null,
+    $item-font-size: null, $item-font-size-big: null, $item-font-weight: null,
+    $item-padding: null, $item-padding-big: null
+) {
+    .x-dataview-#{$ui} {
+        @include _decl(background-color, $background-color);
+
+        .x-dataview-item {
+            @include _decl(color, $item-color);
+            @include _decl(background-color, $item-background-color);
+            @include _decl(font-size, $item-font-size);
+            @include _decl(font-weight, $item-font-weight);
+            @include _decl(padding, $item-padding);
+
+            &.x-item-alt {
+                @include _decl(background-color, $item-alt-background-color);
+            }
+
+            &.x-hovered {
+                @include _decl(color, $item-hovered-color);
+                @include _decl(background-color, $item-hovered-background-color);
+            }
+
+            &.x-selected {
+                @include _decl(color, $item-selected-color);
+                @include _decl(background-color, $item-selected-background-color);
+            }
+
+            &.x-pressed {
+                @include _decl(color, $item-pressed-color);
+                @include _decl(background-color, $item-pressed-background-color);
+            }
+        }
+
+        &.x-big .x-dataview-item {
+            @include _decl(font-size, $item-font-size-big);
+            @include _decl(padding, $item-padding-big);
+        }
+    }
+}
+
+@mixin toolbar-ui(
+    $ui,
+    $background-color: null,
+    $border-color: null, $border-style: null, $border-width: null,
+    $box-shadow: null
+) {
+    .x-toolbar-#{$ui} {
+        @include _decl(background-color, $background-color);
+        @include _decl(border-color, $border-color);
+        @include _decl(border-style, $border-style);
+        @include _decl(border-width, $border-width);
+        @include _decl(box-shadow, $box-shadow);
+    }
+}
+
+@mixin tabbar-ui(
+    $ui,
+    $background-color: null,
+    $border-color: null, $border-style: null, $border-width: null,
+    $horizontal-spacing: null
+) {
+    .x-tabbar-#{$ui} {
+        @include _decl(background-color, $background-color);
+        @include _decl(border-color, $border-color);
+        @include _decl(border-style, $border-style);
+        @include _decl(border-width, $border-width);
+
+        .x-tabbar-item {
+            @include _decl(margin, $horizontal-spacing);
+        }
+    }
+}
+
+@mixin tab-ui(
+    $ui,
+    $background-color: null, $active-background-color: null,
+    $color: null, $focused-color: null, $hovered-color: null, $active-color: null,
+    $border-color: null, $active-border-color: null, $hovered-border-color: null,
+    $focused-border-color: null,
+    $border-style: null, $border-width: null,
+    $border-radius: null, $border-radius-big: null,
+    $focused-outline-style: null
+) {
+    .x-tab-#{$ui} {
+        @include _decl(background-color, $background-color);
+        @include _decl(color, $color);
+        @include _decl(border-color, $border-color);
+        @include _decl(border-style, $border-style);
+        @include _decl(border-width, $border-width);
+        @include _decl(border-radius, $border-radius);
+
+        .x-tab-inner-el {
+            @include _decl(border-color, $border-color);
+            @include _decl(border-style, $border-style);
+            @include _decl(border-width, $border-width);
+        }
+
+        &.x-hovered {
+            @include _decl(color, $hovered-color);
+            @include _decl(border-color, $hovered-border-color);
+        }
+
+        &.x-focused {
+            @include _decl(color, $focused-color);
+            @include _decl(border-color, $focused-border-color);
+            @include _decl(outline-style, $focused-outline-style);
+        }
+
+        &.x-active {
+            @include _decl(background-color, $active-background-color);
+            @include _decl(color, $active-color);
+            @include _decl(border-color, $active-border-color);
+
+            .x-tab-inner-el {
+                @include _decl(border-color, $active-border-color);
+            }
+        }
+
+        &.x-big {
+            @include _decl(border-radius, $border-radius-big);
+        }
+    }
+}
+
+@mixin listswiperstepper-ui(
+    $ui,
+    $active-background-color: null, $active-color: null,
+    $undo-background-color: null, $undo-color: null
+) {
+    .x-listswiperstepper-#{$ui} {
+        .x-listswiperstepper-confirm {
+            @include _decl(background-color, $active-background-color);
+            @include _decl(color, $active-color);
+        }
+
+        .x-listswiperstepper-decline {
+            @include _decl(background-color, $undo-background-color);
+            @include _decl(color, $undo-color);
+        }
+    }
+}
+
+// =============================================================================
+// Fidelity note
+// =============================================================================
+//
+// packages/local/coworkee/sass/var/all.scss overrides GLOBAL Ext theme variables
+// ($button-padding, $panel-header-*, $textfield-*, $gridcolumn-*, ...). A real
+// `sencha theme build` bakes those into Ext's own component CSS, which is what
+// lets them restyle widgets such as Ext.button across the board.
+//
+// This overlay cannot do that: the stock theme CSS in ext/build is already
+// compiled and is not re-run. So this file restores the *application's own*
+// styling (the app/**/*.scss rules and every `ui` declared in the coworkee
+// package), but the global variable overrides only affect rules compiled here.
+//
+// To get 100% fidelity, replace this with a real theme build:
+//   npm login --registry=https://npm.sencha.com --scope=@sencha
+//   npm i @sencha/ext@7.0.0 @sencha/ext-theme-material@7.0.0
+//   npx @sencha/cli theme build
+// and then delete this file along with build-theme.js.

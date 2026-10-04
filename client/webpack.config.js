@@ -51,10 +51,15 @@ module.exports = async function (env, argv) {
             from: path.resolve(__dirname, 'ext/build/modern/theme-material/theme-material.js'),
             to: 'ext/theme-material.js'
           },
-          // Copy application source files so dynamic profile resolution works
+          // Copy application source files so dynamic profile resolution works.
+          // The .scss sources are excluded: they are compiled into coworkee.css by
+          // build-theme.js and are of no use to the browser.
           {
             from: path.resolve(__dirname, 'app'),
-            to: 'app'
+            to: 'app',
+            globOptions: {
+              ignore: ['**/*.scss']
+            }
           },
           // Copy application static resources (images referenced by the theme/app scss)
           {

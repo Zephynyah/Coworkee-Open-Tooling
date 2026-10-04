@@ -9,6 +9,13 @@
     <!-- Pre-built Ext JS Theme Styling (Modern toolkit / Material theme) -->
     <link rel="stylesheet" type="text/css" href="ext/resources/theme-material-all.css">
 
+    <!--
+        Application + theme-package styling, compiled from app/**/*.scss and
+        packages/local/coworkee/sass by build-theme.js (npm run theme). It must load
+        AFTER the stock theme stylesheet so application rules win the cascade.
+    -->
+    <link rel="stylesheet" type="text/css" href="coworkee.css">
+
     <!-- Pre-built Ext JS Framework Binaries (Modern toolkit) -->
     <script type="text/javascript" src="ext/ext-modern-all.js"></script>
     <script type="text/javascript" src="ext/theme-material.js"></script>

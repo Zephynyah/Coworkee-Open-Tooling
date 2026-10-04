@@ -2,6 +2,12 @@
  * This is is imported by virtue of "sass.etc" in "app.json".
  */
 @function contrasted($color, $percent: 50%) {
+    // Declared up front because Sass scopes variables assigned inside @if/@else to
+    // that block; without this the @return below cannot see them. (libsass/Compass
+    // hoisted them, dart-sass does not.)
+    $dark: null;
+    $light: null;
+
     @if $percent < 0 {
         $dark: lighten($color, -$percent);
         $light: darken($color, -$percent);
