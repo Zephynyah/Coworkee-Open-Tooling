@@ -5,17 +5,14 @@ Ext.define('App.view.office.ShowController', {
     onRecordChange: function(view, record) {
         var vm = this.getViewModel(),
             people = vm.getStore('people'),
-            history = vm.getStore('history'),
-            markers = vm.getStore('markers');
+            history = vm.getStore('history');
 
         if (record) {
             people.filter('office_id', record.get('id'));
             history.filter('recipient.office_id', record.get('id'));
-            markers.loadRecords(record);
         } else {
             people.removeAll();
             history.removeAll();
-            markers.removeAll();
         }
 
         this.callParent(arguments);

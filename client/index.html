@@ -14,6 +14,18 @@
     <script type="text/javascript" src="ext/theme-material.js"></script>
 
     <!--
+        Application/theme class overrides. Order matters: coworkee/overrides/init.js tags the
+        active theme name, and each subsequent override must be defined before any app class
+        extends the Ext class it customises. These load after Ext and before the app bundle
+        injected in <body>.
+    -->
+    <script type="text/javascript" src="overrides/coworkee/init.js"></script>
+    <script type="text/javascript" src="overrides/coworkee/LoadMask.js"></script>
+    <script type="text/javascript" src="overrides/coworkee/field/Field.js"></script>
+    <script type="text/javascript" src="overrides/coworkee/dataview/listswiper/ListSwiper.js"></script>
+    <script type="text/javascript" src="overrides/util/Format.js"></script>
+
+    <!--
         Ext.Direct API descriptor. This response calls Ext.ns("Server") and assigns
         Server.API, which App.view.viewport.ViewportController#initDirect reads.
         It must load after Ext (for Ext.ns) and before the app bundle injected in <body>.

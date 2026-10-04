@@ -56,11 +56,22 @@ module.exports = async function (env, argv) {
             from: path.resolve(__dirname, 'app'),
             to: 'app'
           },
-          // Copy optional UX packages if available in your ext build
+          // Copy application static resources (images referenced by the theme/app scss)
           {
-            from: path.resolve(__dirname, 'ext/build/packages/ux/modern'),
-            to: 'ext/ux',
-            noErrorOnMissing: true
+            from: path.resolve(__dirname, 'resources'),
+            to: 'resources'
+          },
+          // Copy the class overrides. They are loaded as plain <script> tags from
+          // index.html rather than bundled, because webpack cannot resolve files that
+          // live under packages/local/coworkee: the Sencha package.json is a commented,
+          // non-JSON manifest and fails as a webpack "directory description file".
+          {
+            from: path.resolve(__dirname, 'packages/local/coworkee/overrides'),
+            to: 'overrides/coworkee'
+          },
+          {
+            from: path.resolve(__dirname, 'overrides'),
+            to: 'overrides'
           }
         ]
       }),

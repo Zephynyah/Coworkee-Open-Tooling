@@ -3,8 +3,6 @@ Ext.define('App.view.office.ShowModel', {
     alias: 'viewmodel.officeshow',
 
     stores: {
-        markers: {},
-
         people: {
             type: 'people',
             pageSize: 12

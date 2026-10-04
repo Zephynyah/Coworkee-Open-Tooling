@@ -9,12 +9,11 @@ Ext.Loader.setConfig({
     enabled: true,
     disableCaching: false,
     paths: {
-        'App': 'app',
-        'Ext.ux': 'ext/ux'
+        'App': 'app'
     }
 });
 
- // 2. Import your Application class so Webpack bundles it.
+ // 1. Import your Application class so Webpack bundles it.
  //
  // NOTE: this MUST use require() and not an ES `import` statement. Webpack hoists
  // `import` declarations to the top of the generated module, which would execute the

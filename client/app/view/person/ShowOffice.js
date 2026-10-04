@@ -27,13 +27,6 @@ Ext.define('App.view.person.ShowOffice', {
                 text: '{record.office.headcount}',
                 tooltip: 'Show employees of the <b>{record.office.name}</b> office.'
             }
-        }],
-    },
-
-    items: [{
-        xtype: 'mapview',
-        bind: {
-            markers: '{record.office}'
-        }
-    }]
+        }]
+    }
 });
