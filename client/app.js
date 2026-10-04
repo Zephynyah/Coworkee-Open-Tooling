@@ -4,11 +4,13 @@
  * Sencha Cmd when upgrading.
  */
 
-// 1. Disable Sencha Cmd's dynamic HTTP loader
+// Configure Ext.Loader paths before initializing the application
 Ext.Loader.setConfig({
-    enabled: false,
+    enabled: true,
+    disableCaching: false,
     paths: {
-        'App': 'app'
+        'App': 'app',
+        'Ext.ux': 'ext/ux'
     }
 });
 

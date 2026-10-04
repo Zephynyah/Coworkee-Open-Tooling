@@ -44,6 +44,6 @@
     },
 
     "client": {
-        "path": "../client"
+        "path": "../client/dist"
     }
 }
