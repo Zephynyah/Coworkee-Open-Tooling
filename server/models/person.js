@@ -2,6 +2,7 @@
 
 var errors = require('../utils/errors');
 var helpers = require('../utils/helpers.js');
+var Op = require('sequelize').Op;
 
 module.exports = function(sequelize, DataTypes) {
     var Model = sequelize.define("Person", {
@@ -138,7 +139,7 @@ module.exports = function(sequelize, DataTypes) {
     Model.lookup = function(identifier) {
         return this.findOne({
             where: {
-                $or: [
+                [Op.or]: [
                     { id: identifier },
                     { username: identifier },
                     { email: identifier }

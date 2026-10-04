@@ -5,6 +5,7 @@ var helpers = require('../utils/helpers.js');
 var session = require('../utils/session.js');
 var errors = require('../utils/errors.js');
 var models = require('../models');
+var Op = require('sequelize').Op;
 
 var Service = {
     list: function(params, callback, sid, req) {
@@ -92,7 +93,7 @@ var Service = {
                 var events = results[1];
                 var ids = unique(events.map(function(e) { return e.person_id; }));
                 return models.Person.scope('nested').findAll({
-                    where: { id: { $in: ids } }
+                    where: { id: { [Op.in]: ids } }
                 }).then(function(people) {
                     return {
                         count: count,

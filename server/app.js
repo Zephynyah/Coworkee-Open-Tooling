@@ -64,7 +64,9 @@ app.get(config.direct.apiUrl, function(req, res, next) {
     try{
       directApi.getAPI(
         function(api) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
+          // This descriptor is loaded as a <script> by the client (it calls
+          // Ext.ns("Server") / Server.API), so it must be served as JavaScript.
+          res.writeHead(200, { 'Content-Type': 'application/javascript' });
           res.end(api);
         }, req, res);
     } catch(exception) {

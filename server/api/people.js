@@ -5,6 +5,7 @@ var helpers = require('../utils/helpers.js');
 var session = require('../utils/session.js');
 var errors = require('../utils/errors.js');
 var models = require('../models');
+var Op = require('sequelize').Op;
 
 function writableFields(params) {
     return helpers.extractFields(params, [
@@ -39,7 +40,7 @@ var Service = {
 
             return models.Person.scope('nested').findOne({
                 where: {
-                    $or: [
+                    [Op.or]: [
                         { id: query },
                         { username: query },
                         { email: query }
@@ -60,7 +61,7 @@ var Service = {
                     return { count: 1, rows: [person] };
                 });
             } else {
-                return models.Person.scope('nested').findAndCount(
+                return models.Person.scope('nested').findAndCountAll(
                     helpers.sequelizify(params, models.Person));
             }
         }).then(function(result) {
@@ -174,7 +175,7 @@ var Service = {
                 .toLowerCase();
 
             return models.Person.findAll({
-                where: { username: { like: username + '%' }},
+                where: { username: { [Op.like]: username + '%' }},
                 order: [['username']],
                 attributes: ['username']
             }).then(function(rows) {

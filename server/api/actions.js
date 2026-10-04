@@ -4,11 +4,12 @@ var helpers = require('../utils/helpers.js');
 var session = require('../utils/session.js');
 var errors = require('../utils/errors.js');
 var models = require('../models');
+var Op = require('sequelize').Op;
 
 var Service = {
     list: function(params, callback, sid, req) {
         session.verify(req).then(function(session) {
-            return models.Action.scope('nested').findAndCount(
+            return models.Action.scope('nested').findAndCountAll(
                 helpers.sequelizify(params, models.Action, {
                     where: { person_id: session.user.get('id') }
                 }));
@@ -67,7 +68,7 @@ var Service = {
 
             return models.Action.destroy({
                 where: {
-                    id: { $in: ids }
+                    id: { [Op.in]: ids }
                 }
             });
         }).then(function() {

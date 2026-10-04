@@ -79,7 +79,12 @@ module.exports = async function (env, argv) {
       port: port,
       compress: isProd,
       inline: !isProd,
-      stats: 'errors-warnings'
+      stats: 'errors-warnings',
+      // The Ext.Direct API is served by the Node server on port 3000. index.html loads
+      // it from the same origin (`/api/`), so proxy it to make the dev server work too.
+      proxy: {
+        '/api': 'http://localhost:3000'
+      }
     }
   };
 };

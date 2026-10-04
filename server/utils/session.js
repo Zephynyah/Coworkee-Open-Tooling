@@ -8,6 +8,7 @@ var errors = require('./errors');
 var config = require('./config');
 var models = require('../models');
 var jwt = require('jsonwebtoken');
+var Op = require('sequelize').Op;
 
 module.exports = {
 
@@ -17,7 +18,7 @@ module.exports = {
         return models.Person.scope('nested').findOne({
             where: {
                 password: password,
-                $or: [
+                [Op.or]: [
                     { username: username },
                     { email: username }
                 ]

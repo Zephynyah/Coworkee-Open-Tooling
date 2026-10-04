@@ -14,8 +14,13 @@ Ext.Loader.setConfig({
     }
 });
 
- // 2. Import your Application class so Webpack bundles it
-import './app/Application';
+ // 2. Import your Application class so Webpack bundles it.
+ //
+ // NOTE: this MUST use require() and not an ES `import` statement. Webpack hoists
+ // `import` declarations to the top of the generated module, which would execute the
+ // app's Ext.define() calls *before* the Ext.Loader.setConfig() call above, leaving
+ // the loader enabled and making Ext fetch every App.* class over HTTP at runtime.
+require('./app/Application');
 
 Ext.application({
     name: 'App',

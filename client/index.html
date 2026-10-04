@@ -12,6 +12,15 @@
     <!-- Pre-built Ext JS Framework Binaries (Modern toolkit) -->
     <script type="text/javascript" src="ext/ext-modern-all.js"></script>
     <script type="text/javascript" src="ext/theme-material.js"></script>
+
+    <!--
+        Ext.Direct API descriptor. This response calls Ext.ns("Server") and assigns
+        Server.API, which App.view.viewport.ViewportController#initDirect reads.
+        It must load after Ext (for Ext.ns) and before the app bundle injected in <body>.
+        When served by the Node server it resolves same-origin; under webpack-dev-server
+        it is proxied to the API server (see webpack.config.js devServer.proxy).
+    -->
+    <script type="text/javascript" src="/api/"></script>
 </head>
 <body class="launching">
 </body>

@@ -1,6 +1,7 @@
 "use strict";
 
 var config = require('../utils/config');
+var Op = require('sequelize').Op;
 
 var Helpers = {
 
@@ -16,7 +17,7 @@ var Helpers = {
     }()),
 
     searchableAttributes: function(model) {
-        var attributes = model.attributes || [];
+        var attributes = model.rawAttributes || {};
         var keys = Object.keys(attributes);
         var result = [];
         var key;
@@ -58,21 +59,21 @@ var Helpers = {
 
                 if (prop === '#search') {
                      // Special case for the "#search" property
-                    prop = '$or';
+                    prop = Op.or;
                     cond = me.searchableAttributes(model).map(function(attr) {
-                        return { [attr]: { $like: '%' + value + '%' } };
+                        return { [attr]: { [Op.like]: '%' + value + '%' } };
                     });
 
                 } else {
                     switch (filter.operator) {
-                    case '<': cond = { $lt: value }; break;
-                    case '<=': cond = { $lte: value }; break;
-                    case '>=': cond = { $gte: value }; break;
-                    case '>': cond = { $gt: value }; break;
-                    case '!=': cond = { $ne: value }; break;
-                    case 'in': cond = { $in: value }; break;
-                    case 'notin': cond = { $notIn: value }; break;
-                    case 'like': cond = { $like: value }; break;
+                    case '<': cond = { [Op.lt]: value }; break;
+                    case '<=': cond = { [Op.lte]: value }; break;
+                    case '>=': cond = { [Op.gte]: value }; break;
+                    case '>': cond = { [Op.gt]: value }; break;
+                    case '!=': cond = { [Op.ne]: value }; break;
+                    case 'in': cond = { [Op.in]: value }; break;
+                    case 'notin': cond = { [Op.notIn]: value }; break;
+                    case 'like': cond = { [Op.like]: value }; break;
                     //case '/=' // NOT SUPPORTED!
                     //case '=':
                     default:
@@ -80,7 +81,7 @@ var Helpers = {
                         break;
                     }
 
-                    if (!(prop in model.attributes)) {
+                    if (!(prop in model.rawAttributes)) {
                         // let's try in another table:
                         // https://github.com/sequelize/sequelize/issues/3095#issuecomment-149277205
                         prop = '$' + prop + '$';
@@ -96,7 +97,7 @@ var Helpers = {
             params.sort.forEach(function(sorter) {
                 var prop = sorter.property;
                 query.order.push([
-                    prop in model.attributes? prop : model.sequelize.col(prop),
+                    prop in model.rawAttributes? prop : model.sequelize.col(prop),
                     sorter.direction
                 ]);
             });
@@ -124,7 +125,7 @@ var Helpers = {
         }
 
         var sequelize = model.sequelize;
-        var column = field in model.attributes? field : sequelize.col(field);
+        var column = field in model.rawAttributes? field : sequelize.col(field);
         var label = this.sequelizeConcat([].concat(params.label || field), sequelize);
         var query = this.sequelizify(params, model, Object.assign(defaults || {}, {
             attributes: [[label, 'label'], [column, 'value']],
