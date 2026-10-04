@@ -7,6 +7,7 @@
 var fs = require("fs");
 var path = require("path");
 var Sequelize = require("sequelize");
+var { DataTypes } = Sequelize;
 var env = process.env.NODE_ENV || "development";
 var config = require(path.join(__dirname, '..', 'utils', 'config')).database;
 var sequelize = new Sequelize(config.database, config.username, config.password, config);
@@ -17,7 +18,7 @@ fs.readdirSync(__dirname)
     return (file.indexOf(".") !== 0) && (file !== "index.js");
   })
   .forEach(function(file) {
-    var model = sequelize.import(path.join(__dirname, file));
+    var model = require(path.join(__dirname, file))(sequelize, DataTypes);
     db[model.name] = model;
   });
 

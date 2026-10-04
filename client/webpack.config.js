@@ -1,100 +1,74 @@
-const ExtWebpackPlugin = require('@sencha/ext-webpack-plugin');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const webpack = require('webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const portfinder = require('portfinder');
 
-module.exports = async function (env) {
-  var browserprofile
-  var watchprofile
-  var buildenvironment = env.environment || process.env.npm_package_extbuild_defaultenvironment
-  if (buildenvironment == 'production') {
-    browserprofile = false
-    watchprofile = 'no'
-  }
-  else {
-    if (env.browser == undefined) {env.browser = 'yes'}
-    browserprofile = env.browser || 'yes'
-    watchprofile = env.watch || 'yes'
-  }
-  const isProd = buildenvironment === 'production'
-  var buildprofile = env.profile || process.env.npm_package_extbuild_defaultprofile
-  var buildenvironment = env.environment || process.env.npm_package_extbuild_defaultenvironment
-  var buildverbose = env.verbose || process.env.npm_package_extbuild_defaultverbose
-  if (buildprofile == 'all') { buildprofile = '' }
-  if (env.treeshake == undefined) {env.treeshake = 'no'}
-  var treeshake = env.treeshake ? env.treeshake : 'no'
-  var basehref = env.basehref || '/'
-  var mode = isProd ? 'production': 'development'
+module.exports = async function (env, argv) {
+  const mode = (argv && argv.mode) || 'development';
+  const isProd = mode === 'production';
 
   portfinder.basePort = (env && env.port) || 1962;
-  return portfinder.getPortPromise().then(port => {
-    const nodeEnv = env && env.prod ? 'production' : 'development'
-    const isProd = nodeEnv === 'production'
-    const plugins = [
+  const port = await portfinder.getPortPromise();
+
+  return {
+    mode: mode,
+    performance: { hints: false },
+    devtool: isProd ? false : 'inline-source-map',
+    context: path.join(__dirname, './'),
+    entry: {
+      main: './app.js'
+    },
+    output: {
+      path: path.resolve(__dirname, 'dist'),
+      filename: '[name].js',
+      publicPath: ''
+    },
+    // Treat Ext as an external global from the statically loaded ext-all.js
+    externals: {
+      Ext: 'Ext'
+    },
+    module: {
+      rules: [
+        {
+          test: /\.js$/,
+          exclude: /node_modules/
+        }
+      ]
+    },
+    plugins: [
+      // 1. Copy the pre-built Ext JS static files to output
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: path.resolve(__dirname, 'client/ext/build/ext-all.js'),
+            to: 'ext/ext-all.js'
+          },
+          {
+            from: path.resolve(__dirname, 'client/ext/build/modern/theme-triton/resources'),
+            to: 'ext/resources'
+          },
+          {
+            from: path.resolve(__dirname, 'client/ext/build/modern/theme-triton/theme-triton.js'),
+            to: 'ext/theme-triton.js'
+          }
+        ]
+      }),
+
+      // 2. Inject output app bundle into HTML
       new HtmlWebpackPlugin({
         template: 'index.html',
         hash: true,
-        inject: "body"
-      }), 
-      new ExtWebpackPlugin({
-        framework: 'extjs',
-        port: port,
-        emit: 'yes',
-        browser: 'no',
-        treeshake: treeshake,
-        watch: watchprofile,
-        profile: buildprofile, 
-        environment: buildenvironment, 
-        verbose: buildverbose
+        inject: 'body'
       })
-    ]
-    return {
-      performance: { hints: false },
-      mode: mode,
-      devtool: (mode === 'development') ? 'inline-source-map' : false,
-      context: path.join(__dirname, './'),
-      entry: {
-        main: "./app.js"
-      },
-      output: {
-        path: path.resolve(__dirname, './'),
-        filename: '[name].js'
-      },
-      module: {
-        rules: [
-          {
-            test: /.js$/,
-            exclude: /node_modules/
-          }
-        ]
-      },
-      plugins: plugins,
-      devServer: {
-        contentBase: './',
-        historyApiFallback: true,
-        host: '0.0.0.0',
-        hot: false,
-        port,
-        disableHostCheck: false,
-        compress: isProd,
-        inline: !isProd,
-        stats: {
-          entrypoints: false,
-          assets: false,
-          children: false,
-          chunks: false,
-          hash: false,
-          modules: false,
-          publicPath: false,
-          timings: false,
-          version: false,
-          warnings: false,
-          colors: {
-            green: '[32m'
-          }
-        }
-      }
+    ],
+    devServer: {
+      contentBase: path.resolve(__dirname, 'dist'),
+      historyApiFallback: true,
+      host: '0.0.0.0',
+      port: port,
+      compress: isProd,
+      inline: !isProd,
+      stats: 'errors-warnings'
     }
-  });
-}
+  };
+};
